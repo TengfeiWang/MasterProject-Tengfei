@@ -4,6 +4,7 @@ package userInterface;
 import info.clearthought.layout.TableLayout;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -13,6 +14,7 @@ import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -28,6 +30,7 @@ import javax.swing.WindowConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+
 
 public class MainGUI extends javax.swing.JFrame {
 
@@ -48,6 +51,7 @@ public class MainGUI extends javax.swing.JFrame {
 	private JPanel part1datacollePanel;
 	private JButton viewExample;
 	private JButton deleteExample;
+	private JButton learnAlphabet;
 	private JTable featureInfoTable;
 	private JPanel resultPanel;
 	private JTextArea dataAnalysis;
@@ -145,6 +149,12 @@ public class MainGUI extends javax.swing.JFrame {
 					evaluation.addActionListener(new ButtonListener());
 					//evaluation.setEnabled(false);
 				}
+				{
+					learnAlphabet = new JButton();
+					controlPanel.add(learnAlphabet, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 12, 100, 8), 0, 0));
+					learnAlphabet.setText("Learn Alphabet");
+					learnAlphabet.addActionListener(new ButtonListener());
+				}
 			}
 			{
 				switchPanel = new JPanel();
@@ -176,7 +186,7 @@ public class MainGUI extends javax.swing.JFrame {
 						startRecording = new JButton("start recording gesture");
 						part1datacollePanel.add(startRecording, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(14, 0, 0, 0), 0, 0));
 						startRecording.setPreferredSize(new java.awt.Dimension(250, 79));
-						
+						startRecording.addActionListener(new ButtonListener());
 					}
 					{
 						part2datacollePanel = new JPanel();
@@ -207,6 +217,7 @@ public class MainGUI extends javax.swing.JFrame {
 							deleteExample = new JButton();
 							part2datacollePanel.add(deleteExample, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 6, 0, 0), 0, 0));
 							deleteExample.setText("Delete Examples!");
+							deleteExample.setLocale(new java.util.Locale("en"));
 							deleteExample.addActionListener(new ButtonListener());
 						}
 					}
@@ -358,6 +369,14 @@ public class MainGUI extends javax.swing.JFrame {
             if(label=="Delete Examples!"){
             	JOptionPane.showConfirmDialog(null, "Are you sure to delete the examples?", "DeleteExamples", JOptionPane.YES_NO_OPTION);
             	
+            }
+            if(label =="start recording gesture"){
+            	RecordingPanel rp = new RecordingPanel();
+            	rp.setVisible(true);
+            }
+            if(label=="Learn Alphabet"){
+            	AlphabetPanel ap = new AlphabetPanel();
+            	ap.setVisible(true);
             }
 
             
