@@ -45,7 +45,7 @@ public class AlphabetPanel extends javax.swing.JFrame {
 				}
 			}
 			pack();
-			this.setSize(419, 341);
+			this.setSize(419, 700);
 		} catch (Exception e) {
 		    //add your error handling code here
 			e.printStackTrace();

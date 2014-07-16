@@ -74,6 +74,7 @@ public class MainGUI extends javax.swing.JFrame {
 	private JPanel trainingPanel;
 	private JPanel recognitionPanel;
     private JButton startRecording;
+    private RecordingPanel rp;
 	/**
 	* Auto-generated main method to display this JFrame
 	*/
@@ -371,8 +372,17 @@ public class MainGUI extends javax.swing.JFrame {
             	
             }
             if(label =="start recording gesture"){
-            	RecordingPanel rp = new RecordingPanel();
-            	rp.setVisible(true);
+            	if(rp!= null){
+            		rp.dispose();
+            		rp=null;
+            	    rp = new RecordingPanel();
+            	    rp.setVisible(true);
+            	    //startRecording.disable();
+            	}
+            	else{
+            		rp = new RecordingPanel();
+            	    rp.setVisible(true);
+            	}
             }
             if(label=="Learn Alphabet"){
             	AlphabetPanel ap = new AlphabetPanel();

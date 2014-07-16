@@ -18,11 +18,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import util.TimerManager;
+
 
 public class RecordingPanel extends javax.swing.JDialog {
 	private JLabel pictureLabel;
 	private JButton startButton;
 	private JLabel instruLabel;
+	private TimerManager task;
 
 	/**
 	* Auto-generated main method to display this JDialog
@@ -42,7 +45,6 @@ public class RecordingPanel extends javax.swing.JDialog {
 				thisLayout.rowHeights = new int[] {7, 7, 7, 7};
 				thisLayout.columnWeights = new double[] {0.0, 0.0, 0.1, 0.1};
 				thisLayout.columnWidths = new int[] {35, 470, 7, 7};
-
 				getContentPane().setLayout(thisLayout);
 				{
 					//Icon image = new ImageIcon("image\\a.png"); 
@@ -81,26 +83,40 @@ public class RecordingPanel extends javax.swing.JDialog {
 	}
 	
 	private void startButtonKeyPressed(KeyEvent evt) {
-		System.out.println("startButton.keyPressed, event="+evt);
+		//System.out.println("startButton.keyPressed, event="+evt);
+
 		if(startButton.getText() =="Start"){
-			startButton.setText("Press"+" "+"Enter"+" " +"to stop ");
+			//startButton.setText("Press"+" "+"Enter"+" " +"to stop ");
 	        //add code to do feature extraction
+			task = new TimerManager();
+			task.start();
+			startButton.setText("Stop");
 		}
 		else{
+			task.stop();
+			//task=null;
+			//System.gc();
 			this.dispose();
 			EnterGestureName inst = new EnterGestureName(); 
 			inst.setVisible(true);
+			
 		}
 		//TODO add your code for startButton.keyPressed
 	}
 	
 	private void startButtonActionPerformed(ActionEvent evt) {
-		System.out.println("startButton.actionPerformed, event="+evt);
+		//System.out.println("startButton.actionPerformed, event="+evt);
 		if(startButton.getText() =="Start"){
-			startButton.setText("Press"+" "+"Enter"+" " +"to stop ");
+			task = new TimerManager();
+			task.start();
+			startButton.setText("Stop"); 
+			//startButton.setText("Press"+" "+"Enter"+" " +"to stop ");
 	        //add code to do feature extraction
 		}
 		else{
+			task.stop();
+			//task=null;
+			//System.gc();
 			this.dispose();
 			EnterGestureName inst = new EnterGestureName(); 
 			inst.setVisible(true);
