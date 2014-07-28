@@ -18,6 +18,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import com.leapmotion.leap.Controller;
+
+import featureExtraction.FeatureExtractor;
+
 import util.TimerManager;
 
 
@@ -26,7 +30,7 @@ public class RecordingPanel extends javax.swing.JDialog {
 	private JButton startButton;
 	private JLabel instruLabel;
 	private TimerManager task;
-
+    private Controller controller;
 	/**
 	* Auto-generated main method to display this JDialog
 	*/
@@ -34,6 +38,8 @@ public class RecordingPanel extends javax.swing.JDialog {
 	public RecordingPanel() {
 
 		initGUI();
+		controller = new Controller();
+		
 	}
 	
 	private void initGUI() {
@@ -88,9 +94,13 @@ public class RecordingPanel extends javax.swing.JDialog {
 		if(startButton.getText() =="Start"){
 			//startButton.setText("Press"+" "+"Enter"+" " +"to stop ");
 	        //add code to do feature extraction
-			task = new TimerManager();
+
+			//FeatureExtractor fe =new FeatureExtractor();
+			//fe.getFeatureVector( controller);
+			task = new TimerManager(controller);
 			task.start();
 			startButton.setText("Stop");
+			
 		}
 		else{
 			task.stop();
@@ -107,9 +117,14 @@ public class RecordingPanel extends javax.swing.JDialog {
 	private void startButtonActionPerformed(ActionEvent evt) {
 		//System.out.println("startButton.actionPerformed, event="+evt);
 		if(startButton.getText() =="Start"){
-			task = new TimerManager();
+
+	        
+			//FeatureExtractor fe =new FeatureExtractor();
+			//fe.getFeatureVector( controller);
+			task = new TimerManager(controller);
 			task.start();
 			startButton.setText("Stop"); 
+
 			//startButton.setText("Press"+" "+"Enter"+" " +"to stop ");
 	        //add code to do feature extraction
 		}

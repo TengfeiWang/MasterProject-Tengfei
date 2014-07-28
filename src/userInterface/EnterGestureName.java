@@ -2,8 +2,13 @@ package userInterface;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import javax.swing.WindowConstants;
@@ -12,7 +17,7 @@ import javax.swing.SwingUtilities;
 
 public class EnterGestureName extends javax.swing.JFrame {
 	private JLabel instrucLabel;
-	private JButton okButtton;
+	private JButton okButton;
 	private JTextField gestureNameField;
 
 	/**
@@ -22,6 +27,22 @@ public class EnterGestureName extends javax.swing.JFrame {
 	public EnterGestureName() {
 		super();
 		initGUI();
+	}
+	
+
+	private void okButtonActionPerformed(ActionEvent evt) {
+		// if OK is clicked,we rename the tempfile.seq to "the name of the gesture".seq
+		String gestureName = gestureNameField.getText();
+		if(gestureName.length() ==0){
+			JOptionPane.showMessageDialog(null, "Please enter the name!", "Error", JOptionPane.ERROR_MESSAGE);
+		}
+		else{
+		    File newFile = new File("data/"+gestureName+".seq"),
+		    oldFile = new File("data/tempfile.seq");
+		    oldFile.renameTo(newFile);
+		    this.dispose();
+		}
+		
 	}
 	
 	private void initGUI() {
@@ -45,9 +66,15 @@ public class EnterGestureName extends javax.swing.JFrame {
 				getContentPane().add(gestureNameField, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(26, 30, 26, 30), 0, 0));
 			}
 			{
-				okButtton = new JButton();
-				getContentPane().add(okButtton, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(19, 55, 27, 55), 0, 0));
-				okButtton.setText("OK");
+				okButton = new JButton();
+				getContentPane().add(okButton, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(19, 55, 27, 55), 0, 0));
+				okButton.setText("OK");
+				okButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent evt) {
+						okButtonActionPerformed(evt);
+					}
+
+				});
 			}
 			pack();
 			setSize(400, 300);

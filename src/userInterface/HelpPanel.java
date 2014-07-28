@@ -33,7 +33,7 @@ public class HelpPanel extends javax.swing.JFrame {
 				}
 			}
 			pack();
-			setSize(400, 300);
+			setSize(400, 700);
 		} catch (Exception e) {
 		    //add your error handling code here
 			e.printStackTrace();

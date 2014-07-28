@@ -31,6 +31,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
+import com.leapmotion.leap.Controller;
+
+
+
 
 public class MainGUI extends javax.swing.JFrame {
 
