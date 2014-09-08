@@ -1,20 +1,27 @@
 package userInterface;
 
 
+import hmm.TrainHmmModels;
 import info.clearthought.layout.TableLayout;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -31,13 +38,31 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
-import com.leapmotion.leap.Controller;
+import com.leapmotion.leap.Hand;
+
+import dataCollection.DataRecording;
+import dataCollection.RecordingGesture;
+
+import recognitionModule.GestureRecognition;
+import recognitionModule.RecognitionPanel;
+
+import util.CountingDown;
+import util.DataFileOperator;
+import util.ObservationSequence;
+import util.recordingManager;
+
+import be.ac.ulg.montefiore.run.jahmm.ObservationVector;
+import be.ac.ulg.montefiore.run.jahmm.io.ObservationSequencesWriter;
+import be.ac.ulg.montefiore.run.jahmm.io.ObservationVectorWriter;
 
 
 
 
 public class MainGUI extends javax.swing.JFrame {
 
+	private static final long serialVersionUID = 1L;
+
+    
 	{
 		//Set Look & Feel
 		try {
@@ -46,7 +71,11 @@ public class MainGUI extends javax.swing.JFrame {
 			e.printStackTrace();
 		}
 	}
-
+	
+	private Map<String ,String> unrecordedGesture;
+	private Hand previousHand;
+    private List<ObservationVector> observationSequence;
+    private String gestureName;
 	private JPanel controlPanel;
 	private JButton dataCollection;
 	private JButton training;
@@ -55,6 +84,8 @@ public class MainGUI extends javax.swing.JFrame {
 	private JPanel part1datacollePanel;
 	private JButton viewExample;
 	private JButton deleteExample;
+	private JPanel evalutatonPanel;
+	private JLabel resultLabel;
 	private JButton learnAlphabet;
 	private JTable featureInfoTable;
 	private JPanel resultPanel;
@@ -73,12 +104,11 @@ public class MainGUI extends javax.swing.JFrame {
 	private JScrollPane featureinfoPanel;
 	private JPanel dataCollePanel;
 	private JPanel switchPanel;
-	private JButton evaluation;
 	private JButton recognition;
 	private JPanel trainingPanel;
 	private JPanel recognitionPanel;
     private JButton startRecording;
-    private RecordingPanel rp;
+ 
 	/**
 	* Auto-generated main method to display this JFrame
 	*/
@@ -86,6 +116,7 @@ public class MainGUI extends javax.swing.JFrame {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				MainGUI inst = new MainGUI();
+				inst.setResizable(false);
 				inst.setLocationRelativeTo(null);
 				inst.setVisible(true);
 			}
@@ -97,6 +128,8 @@ public class MainGUI extends javax.swing.JFrame {
 		initGUI();
 	}
 	
+
+
 	private void initGUI() {
 		try {
 			setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -106,7 +139,7 @@ public class MainGUI extends javax.swing.JFrame {
 				setJMenuBar(jMenuBar);
 				{
 					File = new JMenu();
-					jMenuBar.add(File);
+		     		jMenuBar.add(File);
 					File.setText("File");
 					jMenuBar.add(Box.createHorizontalGlue());
 					Help = new JMenu();
@@ -135,6 +168,10 @@ public class MainGUI extends javax.swing.JFrame {
 					training = new JButton();
 					controlPanel.add(training, new GridBagConstraints(0, 1, 2, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.BOTH, new Insets(20, 10, 20, 22), 0, 0));
 					training.setText("2.Train");
+					/*int numExamples = new DataFileOperator("sequencedata").getFileNum();
+					if(numExamples ==0){
+						training.setEnabled(false);
+					}*/
 					training.setPreferredSize(new java.awt.Dimension(119, 32));
 					training.addActionListener(new ButtonListener());
 				}
@@ -142,21 +179,16 @@ public class MainGUI extends javax.swing.JFrame {
 					recognition = new JButton();
 					controlPanel.add(recognition, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(20, 10, 20, 10), 0, 0));
 					recognition.setText("3.Recognition");
+					/*int numHMMs = new DataFileOperator("hmmdata").getFileNum();
+					if(numHMMs ==0){
+						recognition.setEnabled(false);
+					}*/
 					recognition.setPreferredSize(new java.awt.Dimension(93, 27));
 					recognition.addActionListener(new ButtonListener());
 				}
 				{
-					evaluation = new JButton();
-					controlPanel.add(evaluation, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(19, 12, 25, 11), 0, 0));
-					evaluation.setText("evaluation");
-					evaluation.setLayout(null);
-					evaluation.setPreferredSize(new java.awt.Dimension(102, 38));
-					evaluation.addActionListener(new ButtonListener());
-					//evaluation.setEnabled(false);
-				}
-				{
 					learnAlphabet = new JButton();
-					controlPanel.add(learnAlphabet, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 12, 100, 8), 0, 0));
+					controlPanel.add(learnAlphabet, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.VERTICAL, new Insets(150, 12, 190, 8), 0, 0));
 					learnAlphabet.setText("Learn Alphabet");
 					learnAlphabet.addActionListener(new ButtonListener());
 				}
@@ -210,7 +242,8 @@ public class MainGUI extends javax.swing.JFrame {
 						{
 							infoLabel = new JLabel();
 							part2datacollePanel.add(infoLabel, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-							infoLabel.setText("XX examples recorded!");
+							int numExamples = new DataFileOperator("sequencedata").getFileNum();
+							infoLabel.setText(numExamples+"  examples recorded!");
 						}
 						{
 							viewExample = new JButton();
@@ -242,11 +275,20 @@ public class MainGUI extends javax.swing.JFrame {
 						featureinfoPanel.setBorder(BorderFactory.createTitledBorder("Feature Sets"));
 						trainingPanel.add(featureinfoPanel, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(23, 0, 0, 0), 0, 0));
 						{
+							String[][] columnData =  new DataFileOperator("sequencedata/").tableWriter();
+							
 							TableModel featureInfoTableModel = 
 									new DefaultTableModel(
-											new String[][] { { "One", "Two" }, { "Three", "Four" } },
-											new String[] { "Column 1", "Column 2" });
+											columnData,
+											new String[]{"GestureName","thumbDistal","thumbIntermediate","thumbProximal","thumbMetacarpals",
+													"indexDistal","indexIntermediate","indexProximal","indexMetacarpals",	
+													"middleDistal","middleIntermediate","middleProximal","middleMetacarpals",
+													"ringDistal","ringIntermediate","ringProximal","ringMetacarpals",
+													"pinkyDistal","pinkyIntermediate","pinkyProximal","pinkyMetacarpals",
+													
+											});
 							featureInfoTable = new JTable();
+							featureInfoTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 							featureinfoPanel.setViewportView(featureInfoTable);
 							featureInfoTable.setModel(featureInfoTableModel);
 						}
@@ -266,11 +308,13 @@ public class MainGUI extends javax.swing.JFrame {
 							trainModels = new JButton();
 							trainmodelPanel.add(trainModels, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 							trainModels.setText("Train Models");
+							trainModels.addActionListener(new ButtonListener());
 						}
 						{
 							numofModels = new JLabel();
+							int numHmms = new DataFileOperator("hmmdata").getFileNum();
 							trainmodelPanel.add(numofModels, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-							numofModels.setText("XX models to be trained.");
+							numofModels.setText(numHmms+"  models to be trained.");
 						}
 					}
 					{
@@ -297,8 +341,8 @@ public class MainGUI extends javax.swing.JFrame {
 					recognitionPanel = new JPanel();
 					switchPanel.add(recognitionPanel, "jPanel1");
 					GridBagLayout recognitionPanelLayout = new GridBagLayout();
-					recognitionPanelLayout.rowWeights = new double[] {0.0, 0.1, 0.0, 0.1};
-					recognitionPanelLayout.rowHeights = new int[] {139, 7, 175, 7};
+					recognitionPanelLayout.rowWeights = new double[] {0.0, 0.0, 0.0, 0.1};
+					recognitionPanelLayout.rowHeights = new int[] {171, 214, 175, 7};
 					recognitionPanelLayout.columnWeights = new double[] {0.0, 0.0, 0.1, 0.1};
 					recognitionPanelLayout.columnWidths = new int[] {31, 405, 7, 7};
 					recognitionPanel.setLayout(recognitionPanelLayout);
@@ -306,28 +350,56 @@ public class MainGUI extends javax.swing.JFrame {
 					{
 						runRecognition = new JPanel();
 						GridBagLayout runRecognitionLayout = new GridBagLayout();
-						recognitionPanel.add(runRecognition, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 27), 0, 0));
-						runRecognitionLayout.rowWeights = new double[] {0.1, 0.0, 0.1, 0.1};
-						runRecognitionLayout.rowHeights = new int[] {7, 72, 7, 7};
+						recognitionPanel.add(runRecognition, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(26, 36, 0, 48), 0, 0));
+						runRecognitionLayout.rowWeights = new double[] {0.0, 0.0, 0.0, 0.1};
+						runRecognitionLayout.rowHeights = new int[] {15, 2, 84, 7};
 						runRecognitionLayout.columnWeights = new double[] {0.1, 0.0, 0.1, 0.1};
 						runRecognitionLayout.columnWidths = new int[] {7, 304, 7, 7};
 						runRecognition.setLayout(runRecognitionLayout);
+						runRecognition.setBorder(BorderFactory.createTitledBorder("Recognition"));
 						{
 							runRecognitionB = new JButton();
-							runRecognition.add(runRecognitionB, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+							runRecognition.add(runRecognitionB, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 7, 0, 0), 0, 0));
 							runRecognitionB.setText("Run Recognition");
+							runRecognitionB.addActionListener(new ButtonListener());
 						}
 					}
 					{
-						dataAnalysis = new JTextArea();
-						recognitionPanel.add(dataAnalysis, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.VERTICAL, new Insets(5, 8, 4, 26), 0, 0));
-						dataAnalysis.setText("this area will show the probability of each model during the computation");
-						dataAnalysis.setEditable(false);
+						resultPanel = new JPanel();
+						GridBagLayout resultPanelLayout = new GridBagLayout();
+						resultPanel.setBorder(BorderFactory.createTitledBorder("Result"));
+						recognitionPanel.add(resultPanel, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(16, 33, 14, 47), 0, 0));
+						resultPanelLayout.rowWeights = new double[] {0.1, 0.0, 0.1, 0.1};
+						resultPanelLayout.rowHeights = new int[] {7, 46, 7, 7};
+						resultPanelLayout.columnWeights = new double[] {0.0, 0.0, 0.1, 0.1};
+						resultPanelLayout.columnWidths = new int[] {133, 154, 7, 7};
+						resultPanel.setLayout(resultPanelLayout);
+						{
+							resultLabel = new JLabel();
+							resultLabel.setFont(new java.awt.Font("Dialog", 1, 15));
+							resultPanel.add(resultLabel, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+							resultLabel.setPreferredSize(new java.awt.Dimension(16, 16));
+						}
 					}
 					{
-						resultPanel = new JPanel();
-						resultPanel.setBorder(BorderFactory.createTitledBorder("Result"));
-						recognitionPanel.add(resultPanel, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(39, 13, 0, 27), 0, 0));
+						evalutatonPanel = new JPanel();
+						GridBagLayout evalutatonPanelLayout = new GridBagLayout();
+						recognitionPanel.add(evalutatonPanel, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(17, 34, 7, 46), 0, 0));
+						evalutatonPanelLayout.rowWeights = new double[] {0.0, 0.0, 0.0, 0.1};
+						evalutatonPanelLayout.rowHeights = new int[] {23, 124, 36, 7};
+						evalutatonPanelLayout.columnWeights = new double[] {0.0, 0.0, 0.1, 0.1};
+						evalutatonPanelLayout.columnWidths = new int[] {17, 292, 7, 7};
+						evalutatonPanel.setLayout(evalutatonPanelLayout);
+						evalutatonPanel.setBorder(BorderFactory.createTitledBorder("Evaluation"));
+						{
+							dataAnalysis = new JTextArea();
+							evalutatonPanel.add(dataAnalysis, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 4, 0, 0), 0, 0));
+							dataAnalysis.setText("this area will show the probability of each model during the computation");
+							dataAnalysis.setEditable(false);
+							dataAnalysis.setLineWrap(true);
+						
+							
+						}
 					}
 					{
 						 /*JButton trainingb =new JButton("this is the recognition panel");
@@ -350,6 +422,7 @@ public class MainGUI extends javax.swing.JFrame {
 	class ButtonListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
+        	
             JButton o = (JButton) e.getSource();
             String label = o.getText();
             if(label=="2.Train"){
@@ -359,6 +432,7 @@ public class MainGUI extends javax.swing.JFrame {
             }
             if(label=="1.Data Collection"){
             	dataCollePanel.setVisible(true);
+            	//dataCollePanel.updateUI();
             	trainingPanel.setVisible(false);
                	recognitionPanel.setVisible(false);
             }
@@ -376,25 +450,83 @@ public class MainGUI extends javax.swing.JFrame {
             	
             }
             if(label =="start recording gesture"){
-            	if(rp!= null){
-            		rp.dispose();
-            		rp=null;
-            	    rp = new RecordingPanel();
-            	    rp.setVisible(true);
-            	    //startRecording.disable();
-            	}
-            	else{
-            		rp = new RecordingPanel();
-            	    rp.setVisible(true);
-            	}
+            	    unrecordedGesture = new recordingManager().unrecordedGesture();
+            	    System.out.print(unrecordedGesture);
+            	    List<List<ObservationVector>> seqs = new ArrayList<List<ObservationVector>>();
+
+                    //gestureName = JOptionPane.showInputDialog(null,"Gesture Name:","Enter Recording Parameters",JOptionPane.QUESTION_MESSAGE);
+            	    Iterator<Entry<String, String>> iter = unrecordedGesture.entrySet().iterator(); 
+            	    while (iter.hasNext()) {
+            	         Map.Entry<String, String> entry = (Map.Entry<String,String>) iter.next(); 
+            	         String key = entry.getKey(); 
+            	         String val = entry.getValue();
+            	    	
+            	         for(int i=0;i<5;i++){
+                            /* RecordingPanel recordingPanel = null;
+                             if(recordingPanel ==null){
+            	        	     ObservationSequence OS = new ObservationSequence();
+            	        	     
+            	        	     recordingPanel = new RecordingPanel(i,key,OS);
+            	    	         recordingPanel.setModal(true);
+            	    	         recordingPanel.setVisible(true);
+            	    	         recordingPanel.getObservationSequence();
+            	    	         observationSequence=OS.observationSequence;
+            	    	         System.out.println("hi"+observationSequence);
+            	    	         seqs.add(observationSequence);
+                             }*/
+            	        	 ObservationSequence OS = new ObservationSequence();
+                             RecordingGesture recordingPanel = new RecordingGesture(OS,val,key);
+                       
+                             recordingPanel.setModal(true);
+                             recordingPanel.setVisible(true);
+                   
+              
+                            // while(OS.flag ==false){};
+                             //CountingDown cd = new CountingDown(recordingPanel);
+                             //cd.start();
+                            // while(cd.flag ==false){};
+        	    	         observationSequence=OS.observationSequence;
+        	    	         System.out.println("hi"+observationSequence);
+        	    	         seqs.add(observationSequence);
+         
+            	    	    
+            	    	     
+            	        }
+                			try {
+                				Writer writer = new FileWriter("sequencedata/"+key+".seq");
+                				ObservationSequencesWriter.write(writer, new ObservationVectorWriter(), seqs);
+                				writer.close();
+                			} catch (IOException e1) {
+                				// TODO Auto-generated catch block
+                				e1.printStackTrace();
+                			}
+            	    }
+ 
+        			
+           
             }
             if(label=="Learn Alphabet"){
             	AlphabetPanel ap = new AlphabetPanel();
             	ap.setVisible(true);
             }
 
-            
+            if(label=="Train Models"){
+            	TrainHmmModels trainModels = new TrainHmmModels(trainingProcess);
+            	trainModels.trainAll();
+
+            }
+            if(label =="Run Recognition"){
+            	ObservationSequence OS = new ObservationSequence();
+            	RecognitionPanel recognitionPanel = new RecognitionPanel(OS);
+            	recognitionPanel.setModal(true);
+            	recognitionPanel.setVisible(true);
+   	    	    observationSequence=OS.observationSequence;
+   	    	    System.out.println("hi"+observationSequence);
+   	    	    GestureRecognition gestureRecognition = new GestureRecognition(OS,dataAnalysis,resultLabel);
+   	    	    gestureRecognition.showResult();
+            }
 
         }
     }
 }
+

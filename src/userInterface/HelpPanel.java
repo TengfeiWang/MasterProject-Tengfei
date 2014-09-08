@@ -7,6 +7,10 @@ import javax.swing.WindowConstants;
 
 
 public class HelpPanel extends javax.swing.JFrame {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JScrollPane scrollPane;
 	private JTextArea textArea;
 

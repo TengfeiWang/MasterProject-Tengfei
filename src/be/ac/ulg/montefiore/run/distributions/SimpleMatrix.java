@@ -232,6 +232,12 @@ class SimpleMatrix
 	
 	static double[][] decomposeCholesky(double[][] m)
 	{
+		System.out.println(nbRows(m)+"  "+nbColumns(m));
+		for(int i =0;i<nbRows(m);i++){
+			for(int j=0;j<nbColumns(m);j++)
+				System.out.print(m[i][j]);
+			System.out.println();
+		}
 		if (!isSquare(m))
 			throw new IllegalArgumentException("Matrix is not square");
 		

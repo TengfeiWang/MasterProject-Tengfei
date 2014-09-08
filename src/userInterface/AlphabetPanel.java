@@ -7,10 +7,13 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import javax.swing.WindowConstants;
-import javax.swing.SwingUtilities;
 
 
 public class AlphabetPanel extends javax.swing.JFrame {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JScrollPane scrollPanel;
 	private JPanel picturePanel;
 	private JLabel pictureLabel;

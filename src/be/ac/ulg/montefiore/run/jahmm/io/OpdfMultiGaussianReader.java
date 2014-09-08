@@ -70,7 +70,7 @@ extends OpdfReader<OpdfMultiGaussian>
 		for (int l = 0; l < covariance.length; l++)
 			covariance[l] = OpdfReader.read(st, means.length);
 		HmmReader.readWords(st, "]");
-		
+		HmmReader.readWords(st, "]");
 		return new OpdfMultiGaussian(means, covariance);
 	}
 }

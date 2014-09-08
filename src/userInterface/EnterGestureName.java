@@ -12,10 +12,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import javax.swing.WindowConstants;
-import javax.swing.SwingUtilities;
 
 
 public class EnterGestureName extends javax.swing.JFrame {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JLabel instrucLabel;
 	private JButton okButton;
 	private JTextField gestureNameField;
@@ -37,8 +40,9 @@ public class EnterGestureName extends javax.swing.JFrame {
 			JOptionPane.showMessageDialog(null, "Please enter the name!", "Error", JOptionPane.ERROR_MESSAGE);
 		}
 		else{
-		    File newFile = new File("data/"+gestureName+".seq"),
-		    oldFile = new File("data/tempfile.seq");
+		    File newFile = new File("sequencedata/"+gestureName+".seq");
+		    		  System.out.println(gestureName);
+		    File oldFile = new File("sequencedata/tempfile.seq");
 		    oldFile.renameTo(newFile);
 		    this.dispose();
 		}

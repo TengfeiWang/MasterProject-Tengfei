@@ -1,45 +1,66 @@
 package userInterface;
-import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.List;
 
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-
+import be.ac.ulg.montefiore.run.jahmm.ObservationVector;
 import com.leapmotion.leap.Controller;
 
-import featureExtraction.FeatureExtractor;
-
+import util.ObservationSequence;
 import util.TimerManager;
 
 
+
+/**
+* This code was edited or generated using CloudGarden's Jigloo
+* SWT/Swing GUI Builder, which is free for non-commercial
+* use. If Jigloo is being used commercially (ie, by a corporation,
+* company or business for any purpose whatever) then you
+* should purchase a license for each developer using Jigloo.
+* Please visit www.cloudgarden.com for details.
+* Use of Jigloo implies acceptance of these licensing terms.
+* A COMMERCIAL LICENSE HAS NOT BEEN PURCHASED FOR
+* THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED
+* LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
+*/
 public class RecordingPanel extends javax.swing.JDialog {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JLabel pictureLabel;
 	private JButton startButton;
 	private JLabel instruLabel;
 	private TimerManager task;
     private Controller controller;
+    private int obsIndex;
+    private String gestureName;
+    public  List<ObservationVector> observationSequence = null;
+    public ObservationSequence OS;
 	/**
 	* Auto-generated main method to display this JDialog
 	*/
-		
-	public RecordingPanel() {
 
+
+	public RecordingPanel(int index ,String name,ObservationSequence OS) {
+		this.OS = OS;
+        obsIndex = index+1;
+        gestureName=name;
 		initGUI();
 		controller = new Controller();
 		
+	}
+	
+	public List<ObservationVector> getObservationSequence(){
+		return observationSequence;
 	}
 	
 	private void initGUI() {
@@ -58,7 +79,7 @@ public class RecordingPanel extends javax.swing.JDialog {
 					pictureLabel = new JLabel();
 					getContentPane().add(pictureLabel, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(6, 0, 7, 0), 0, 0));
 					pictureLabel.setVisible(true);
-					pictureLabel.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/c.gif")));
+					pictureLabel.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/example.gif")));
 				}
 				{
 					instruLabel = new JLabel();
@@ -73,7 +94,7 @@ public class RecordingPanel extends javax.swing.JDialog {
 							startButtonActionPerformed(evt);
 						}
 					});
-					startButton.setText("Start");
+					startButton.setText("Start"+" recording observation "+obsIndex+" for "+gestureName);
 					startButton.addKeyListener(new KeyAdapter() {
 						public void keyPressed(KeyEvent evt) {
 							startButtonKeyPressed(evt);
@@ -91,37 +112,38 @@ public class RecordingPanel extends javax.swing.JDialog {
 	private void startButtonKeyPressed(KeyEvent evt) {
 		//System.out.println("startButton.keyPressed, event="+evt);
 
-		if(startButton.getText() =="Start"){
+		if(startButton.getText() !="Stop"){
 			//startButton.setText("Press"+" "+"Enter"+" " +"to stop ");
 	        //add code to do feature extraction
 
 			//FeatureExtractor fe =new FeatureExtractor();
 			//fe.getFeatureVector( controller);
-			task = new TimerManager(controller);
+			task = new TimerManager(controller,OS);
 			task.start();
-			startButton.setText("Stop");
 			
+			startButton.setText("Stop");
+			while(OS.flag ==false){
+				
+			}
+			this.dispose();
 		}
 		else{
 			task.stop();
-			//task=null;
-			//System.gc();
+			System.out.println(OS.observationSequence);
 			this.dispose();
-			EnterGestureName inst = new EnterGestureName(); 
-			inst.setVisible(true);
-			
 		}
 		//TODO add your code for startButton.keyPressed
 	}
 	
 	private void startButtonActionPerformed(ActionEvent evt) {
 		//System.out.println("startButton.actionPerformed, event="+evt);
-		if(startButton.getText() =="Start"){
+		if(startButton.getText() != "Stop"){
 
 	        
 			//FeatureExtractor fe =new FeatureExtractor();
 			//fe.getFeatureVector( controller);
-			task = new TimerManager(controller);
+			
+			task = new TimerManager(controller,OS);
 			task.start();
 			startButton.setText("Stop"); 
 
@@ -129,14 +151,12 @@ public class RecordingPanel extends javax.swing.JDialog {
 	        //add code to do feature extraction
 		}
 		else{
-			task.stop();
-			//task=null;
-			//System.gc();
+			//OS.observationSequence = task.stop();
 			this.dispose();
-			EnterGestureName inst = new EnterGestureName(); 
-			inst.setVisible(true);
 		}
 		//TODO add your code for startButton.actionPerformed
 	}
+
+
 
 }
