@@ -7,96 +7,65 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import util.ObservationSequence;
 import util.TimerManager;
 import com.leapmotion.leap.Controller;
-
+import java.awt.Color;
 
 
 /**
-* This code was edited or generated using CloudGarden's Jigloo
-* SWT/Swing GUI Builder, which is free for non-commercial
-* use. If Jigloo is being used commercially (ie, by a corporation,
-* company or business for any purpose whatever) then you
-* should purchase a license for each developer using Jigloo.
-* Please visit www.cloudgarden.com for details.
-* Use of Jigloo implies acceptance of these licensing terms.
-* A COMMERCIAL LICENSE HAS NOT BEEN PURCHASED FOR
-* THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED
-* LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
+ * @author Tengfei Wang
 */
 public class RecordingGesture extends javax.swing.JDialog{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JLabel jLabel2;
 	private JLabel jLabel3;
 	private JLabel jLabel4;
+	private JLabel jLabel5;
 	private  JLabel timerLabel;
 	private JLabel jLabel1;
 	private  TimerManager task;
-    private  Controller controller;
-    //public  List<ObservationVector> observationSequence = null;
-    public  ObservationSequence OS;
-    private String gestureName;
-    private JButton testButton;
-    private JPanel container;
-    private String imageName;
-
+        private  Controller controller;
+        //public  List<ObservationVector> observationSequence = null;
+        public  ObservationSequence OS;
+        private JPanel container;
+        private String imageName;
+        private String imageName0;
+        private List<Integer> allFeatures;
+        private boolean isTest =false;
 
 	/**
 	* Auto-generated main method to display this JDialog
 	*/
 		
-	public RecordingGesture(ObservationSequence OS,String iName,String gName) {
+	public RecordingGesture(ObservationSequence OS,String iName,String gName,List<Integer> allFeatures,boolean isTest) {
 		super();
 		this.imageName = iName;
-		this.gestureName = gName;
+		this.imageName0 = gName;
+		this.allFeatures = allFeatures;
 		this.OS = OS;
+                this.isTest =isTest;
 		
 		initGUI();
 		controller = new Controller();
 		//getObservationSequence();
 		
 	}
-	
-	public void getObservationSequence(){
 		
-	
-		/*for(int i=4;i>=0;i--){
-			try {
-				
-			Thread.sleep(1000);
-			
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			timerLabel.setText(String.valueOf(i));
-			//timerLabel.repaint();
-			
-		
-		}
-		while(Integer.parseInt(timerLabel.getText()) != 0){System.out.println(timerLabel.getText()+"     "+String.valueOf(0));}*/
-		task = new TimerManager(controller,OS);
-		task.start();
-		while(OS.flag ==false){
-			
-		}
-		this.dispose();
-
-	
-	}
-	
-
-	
-	
 	
 	private void initGUI() {
 		try {
@@ -104,6 +73,14 @@ public class RecordingGesture extends javax.swing.JDialog{
 				BorderLayout thisLayout = new BorderLayout();
 				this.setTitle("Recording Gesture");
 				getContentPane().setLayout(thisLayout);
+				this.addWindowListener(new WindowAdapter() {
+					public void windowClosing(WindowEvent evt) {
+						//System.out.println("this.windowClosing, event="+evt);
+						//TODO add your code for this.windowClosing
+						OS.userBreak = true;
+						dispose();
+					}
+				});
 				{
 					container = new JPanel();
 					getContentPane().add(container, BorderLayout.CENTER);
@@ -111,9 +88,18 @@ public class RecordingGesture extends javax.swing.JDialog{
 					containerLayout.rowWeights = new double[] {0.1, 0.0, 0.1, 0.1};
 					containerLayout.rowHeights = new int[] {7, 197, 7, 7};
 					containerLayout.columnWeights = new double[] {0.0, 0.0, 0.0, 0.1};
-					containerLayout.columnWidths = new int[] {101, 183, 94, 7};
+					containerLayout.columnWidths = new int[] {101, 147, 94, 7};
 					container.setLayout(containerLayout);
-					container.setPreferredSize(new java.awt.Dimension(651, 474));
+					container.setPreferredSize(new java.awt.Dimension(584, 412));
+					{
+						jLabel5 = new JLabel();
+						container.add(jLabel5, new GridBagConstraints(0, 3, 4, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+						jLabel5.setText("Press any key to exit.");
+						jLabel5.setPreferredSize(new java.awt.Dimension(584, 38));
+						jLabel5.setHorizontalAlignment(SwingConstants.CENTER);
+						jLabel5.setFont(new java.awt.Font("Aparajita",1,20));
+					}
+					
 					{
 						jLabel2 = new JLabel();
 						container.add(jLabel2, new GridBagConstraints(3, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 8), 0, 0));
@@ -124,26 +110,25 @@ public class RecordingGesture extends javax.swing.JDialog{
 						jLabel1 = new JLabel();
 						container.add(jLabel1, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 						jLabel1.setPreferredSize(new java.awt.Dimension(151, 155));
-						jLabel1.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/A.png")));
-					}
-					{
-						jLabel3 = new JLabel();
-						container.add(jLabel3, new GridBagConstraints(0, 0, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-						jLabel3.setText("Please perform the transition when the timer goes to 0");
-						jLabel3.setFont(new java.awt.Font("Andalus",2,24));
-						jLabel3.setHorizontalAlignment(SwingConstants.CENTER);
+						jLabel1.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/"+imageName0.substring(0, 1)+".png")));
 					}
 					{
 						timerLabel = new JLabel();
 						container.add(timerLabel, new GridBagConstraints(0, 2, 4, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 						timerLabel.setLayout(null);
-						timerLabel.setText("5");
+						timerLabel.setText("3");
+                                                timerLabel.setForeground(Color.BLUE);
 						timerLabel.setFocusable(true);
 						timerLabel.setHorizontalAlignment(SwingConstants.CENTER);
-						timerLabel.setFont(new java.awt.Font("MV Boli",0,48));
+						timerLabel.setFont(new java.awt.Font("Aparajita",0,30));
 						timerLabel.addFocusListener(new FocusAdapter() {
 							public void focusGained(FocusEvent evt) {
 								timerLabelFocusGained(evt);
+							}
+						});
+						timerLabel.addKeyListener(new KeyAdapter() {
+							public void keyPressed(KeyEvent evt) {
+								thisKeyPressed(evt);
 							}
 						});
 					}
@@ -155,59 +140,23 @@ public class RecordingGesture extends javax.swing.JDialog{
 						jLabel4.setHorizontalAlignment(SwingConstants.CENTER);
 					}
 					{
-						testButton = new JButton();
-						container.add(testButton, new GridBagConstraints(2, 3, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-						testButton.setText("Start");
-						testButton.setVisible(false);
-						testButton.setFocusable(true);
-						testButton.addFocusListener(new FocusAdapter() {
-							public void focusGained(FocusEvent evt) {
-								testButtonFocusGained(evt);
-							}
-						});
-
+						jLabel3 = new JLabel();
+						container.add(jLabel3, new GridBagConstraints(0, 0, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+						jLabel3.setText("Please perform the transition when the timer goes to 0");
+						jLabel3.setFont(new java.awt.Font("Lucida Bright",1,20));
+						jLabel3.setHorizontalAlignment(SwingConstants.CENTER);
 					}
 				}
 
 			}
-			this.setSize(667, 478);
+			this.setSize(600, 478);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
 	
-	private void testButtonFocusGained(FocusEvent evt) {
-		new Thread(new Runnable() {
-            @Override
-            public void run() {
-            	for(int i=4;i>=0;i--){
-        			try {
-        				
-        			Thread.sleep(1000);
-        			
-        			} catch (InterruptedException e) {
-        				// TODO Auto-generated catch block
-        				e.printStackTrace();
-        			}
-        			
-        			timerLabel.setText(String.valueOf(i));
-        			//timerLabel.repaint();
-        			
-        		
-        		}
-            	timerLabel.setText("RECORDING¡£¡£¡£¡£¡£¡£");
-        		task = new TimerManager(controller,OS);
-        		task.start();
-        		while(OS.flag ==false){
-        			
-        		}
-        		dispose();
-        		
-           
-            }
-        }).start();
-	}
+
 	
 	private void timerLabelFocusGained(FocusEvent evt) {
 	
@@ -215,7 +164,7 @@ public class RecordingGesture extends javax.swing.JDialog{
 		new Thread(new Runnable() {
             @Override
             public void run() {
-            	for(int i=4;i>=-1;i--){
+            	for(int i=2;i>=-1;i--){
         			try {
         				
         			Thread.sleep(1000);
@@ -230,16 +179,37 @@ public class RecordingGesture extends javax.swing.JDialog{
         			
         		
         		}
-            	timerLabel.setText("recording.......");
-        		task = new TimerManager(controller,OS);
-        		task.start();
-        		while(OS.flag ==false){
+            	        timerLabel.setText("Please Perform");
+                        
+                        timerLabel.setForeground(Color.RED);
+                        if(isTest){
+                            task = new TimerManager(controller,OS,allFeatures,true);
+        		    task.start();
+                        }
+                        else{
+                            task = new TimerManager(controller,OS,allFeatures,false);
+        		    task.start();
+                        }
+        		
+                        while(!OS.isStarted && !OS.shouldBreak  && OS.leapConnected ){
+                            
+                        }
+                        timerLabel.setText("Recording â€¦â€¦");
+                        timerLabel.setForeground(Color.GREEN);
+        		while(!OS.flag  && !OS.shouldBreak  && OS.leapConnected ){
         			
         		}
         		dispose();
            
             }
         }).start();
+	}
+	
+	private void thisKeyPressed(KeyEvent evt) {//when any key is pressed, exit.
+		//System.out.println("this.keyPressed, event="+evt);
+		OS.userBreak = true;
+		dispose();
+			
 	}
 
 }

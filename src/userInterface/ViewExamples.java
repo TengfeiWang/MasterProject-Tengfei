@@ -1,5 +1,9 @@
 package userInterface;
 import java.awt.BorderLayout;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
@@ -8,21 +12,21 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import util.DataFileOperator;
 
+/**Athor:Tengfei Wang
+ * This frame contains the already recorded data read
+ * from the **.seq files from the "sequencedata" folder.
+ */
 
 public class ViewExamples extends javax.swing.JFrame {
-	/**
-	 * 
-	 */
+
+	
 	private static final long serialVersionUID = 1L;
 	private JScrollPane jScrollPane;
 	private JTable sequenceTable;
-	private String[] columnNames =new String[]{"GestureName","thumbDistal","thumbIntermediate","thumbProximal","thumbMetacarpals",
-			"indexDistal","indexIntermediate","indexProximal","indexMetacarpals",	
-			"middleDistal","middleIntermediate","middleProximal","middleMetacarpals",
-			"ringDistal","ringIntermediate","ringProximal","ringMetacarpals",
-			"pinkyDistal","pinkyIntermediate","pinkyProximal","pinkyMetacarpals",
-			
-	};
+	private  List<Integer> featureVectorUsed;
+	private HashMap<Integer,String> allFeatureVector;
+        private String workDir = null;
+ 
 	//private String [][] columnData;
 
 
@@ -30,14 +34,17 @@ public class ViewExamples extends javax.swing.JFrame {
 	* Auto-generated main method to display this JFrame
 	*/
 		
-	public ViewExamples() {
+	public ViewExamples(List<Integer> featureVectorUsed, HashMap<Integer,String> allFeatureVector,String workDir) {
 		super();
+                this.workDir = workDir;
+		this.featureVectorUsed = featureVectorUsed;
+		this.allFeatureVector =allFeatureVector;
 		initGUI();
 	}
 	
 	private void initGUI() {
 		try {
-			setTitle("view examples");
+			setTitle("View Examples");
 			setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			{
 				jScrollPane = new JScrollPane();
@@ -83,11 +90,18 @@ public class ViewExamples extends javax.swing.JFrame {
 						reader.close ();
 					}*/
 					//the above code read the data from all .seq files to the JTable
-					String[][] columnData =  new DataFileOperator("sequencedata/").tableWriter();
+			            String[][] columnData =  new DataFileOperator(workDir+"/sequencedata/",featureVectorUsed).tableWriter();
+				    List columnNames = new ArrayList();
+				    {
+							columnNames.add("Transition Name");
+							for(int i = 0; i<featureVectorUsed.size();i++){
+								columnNames.add(allFeatureVector.get(featureVectorUsed.get(i)));
+							}
+					}
    					TableModel sequenceTableModel = 
-							new DefaultTableModel(columnData,columnNames);
+							new DefaultTableModel(columnData,columnNames.toArray());
 					sequenceTable = new JTable();
-					sequenceTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+					//sequenceTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 					sequenceTable.setModel(sequenceTableModel);
 					jScrollPane.setViewportView(sequenceTable);
 				}

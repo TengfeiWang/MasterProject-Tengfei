@@ -7,41 +7,68 @@ import java.util.TimerTask;
 
 import be.ac.ulg.montefiore.run.jahmm.ObservationVector;
 import com.leapmotion.leap.Controller;
+import com.leapmotion.leap.Frame;
 import com.leapmotion.leap.Hand;
 
 import featureExtraction.FeatureExtractor;
 import util.HandDetector;
 
+/**
+ * 
+ * @author WangTF
+ *this class defines a timer ,we run feature extraction every certain time(in ms)
+ */
 
-//this class defines a timer ,we run feature extraction every certain time(in ms)
 public class TimerManager {
 
 	  public Timer timer = new Timer();
-	  private Controller subController;
+	  private Controller subController =null;
 	  private ObservationVector observationVector;
-	 // public  List<ObservationVector> observationSequence = null;
+          private Frame previousFrame;
+
 	  public ObservationSequence OS;
 	  private double currentHandParameterSum;
 	  private double previousHandParameterSum;
 	  private long startTime; 
+	  private  List<Integer> allFeatures;
+	  private boolean isRecognition;
+	  private double threshold;
+          public boolean isStarted;
+
      
 	  
-      public TimerManager(Controller controller,ObservationSequence OS){
+      public TimerManager(Controller controller,ObservationSequence OS, List<Integer> allFeatures, boolean isRecognition){
+    	  
     	  subController = controller;
     	  this.OS = OS;
+    	  this.isRecognition = isRecognition;
     	  currentHandParameterSum = 0.0;
     	  previousHandParameterSum = 0.0;
+    	  this.allFeatures = allFeatures;
     	  startTime=System.currentTimeMillis();
+          OS.isStarted =false;
     	 // observationSequence = new ArrayList<ObservationVector>();
     	  
       }
+
 	  
 	  public  void start() {  
-	  timer.schedule(new RemindTask(), 0, 100); 
+		  if(isRecognition == true){
+			  timer.schedule(new RemindTask(), 0, 100); 
+			  threshold =3.0;
+			  
+		  }else{
+			  timer.schedule(new RemindTask(), 0, 10); 
+			  threshold = 0.3;
+		  }
+		  
+	       
+	  
 	  }
 
 	  public  void stop(){
-	         timer.cancel();
+	       
+	  timer.cancel();
 		  
 	  }
 	  
@@ -50,23 +77,62 @@ public class TimerManager {
 	    	  
 	           public void run() {
 	      
-	        	   FeatureExtractor fe =new FeatureExtractor(subController);	        	 
-	 	   		   double[] featureVector =  fe.getFeatureVector();
-	 	   		   Hand currentHand = fe.getHandObject();
-	 	   		   currentHandParameterSum = new HandDetector().sumOfDistance(currentHand);
-		           observationVector = new ObservationVector(featureVector);
-		           System.out.println(observationVector);
-		           if(currentHandParameterSum !=0.0 && previousHandParameterSum != 0.0){
-		               System.out.println(Math.abs(currentHandParameterSum-previousHandParameterSum)+"........has already run"+(System.currentTimeMillis()-startTime));
-		   	           if(Math.abs(currentHandParameterSum-previousHandParameterSum) <0.2 && System.currentTimeMillis()-startTime >700){
-		   	              System.out.println("nima");
-		   	              OS.flag = true;
-		   	        	  cancel();
-		   	        	   
-		   	           }
+	        	   FeatureExtractor fe =new FeatureExtractor(subController,allFeatures);
+	        	   Frame currentFrame = fe.getFrame();
+                           //Hand currentHand =fe.getHandObject();
+	        	   
+	        	   if(subController.isConnected()==false){
+	        		   OS.leapConnected= false;
+	        		   cancel();
+	        	   }
+	        	   
+   	        	   if(currentFrame.hands().get(0).isValid() == false){
+	        		 OS.shouldBreak = true;
+	        		 cancel();
+	        	   }
+	 	   		   
+	 	   	   currentHandParameterSum = new HandDetector().sumOfDistance(currentFrame.hands().get(0));
+		           
+		           if(currentHandParameterSum !=0 && previousHandParameterSum == 0.0 ){
+		        	   double[] featureVector =  fe.getFeatureVector(previousFrame);
+		 	           observationVector = new ObservationVector(featureVector);
+	            	           OS.observationSequence.add(observationVector);
+	            	           previousHandParameterSum = currentHandParameterSum;
+                                   previousFrame = currentFrame;
 		           }
-		          OS.observationSequence.add(observationVector);
-		          previousHandParameterSum = currentHandParameterSum;
+		           else if(currentHandParameterSum !=0.0 && previousHandParameterSum != 0.0){
+		                   if(OS.isStarted ==false  && Math.abs(currentHandParameterSum-previousHandParameterSum)>1.0){//the start of a transition
+                                       OS.isStarted =true;
+                                       //double[] featureVector =  fe.getFeatureVector(previousFrame);
+			 	       //observationVector = new ObservationVector(featureVector);
+		            	       //OS.observationSequence.add(observationVector);
+		            	       //previousHandParameterSum = currentHandParameterSum;
+                                       //previousFrame = currentFrame;
+                                       startTime = System.currentTimeMillis();
+                                   }
+                                   if( OS.isStarted ){
+                                       
+                                        if( System.currentTimeMillis()-startTime >600 && Math.abs(currentHandParameterSum-previousHandParameterSum) <threshold ){
+		   	               	      //System.out.println("length: "+ OS.observationSequence.size());
+		   	                      OS.flag = true;
+                                              cancel();
+		   	                      
+		   	        	   
+		   	                }else {
+                                            //if(Math.abs(currentHandParameterSum-previousHandParameterSum)>threshold){
+                                        
+                                        
+			 	               double[] featureVector =  fe.getFeatureVector(previousFrame);
+			 	               observationVector = new ObservationVector(featureVector);
+		            	               OS.observationSequence.add(observationVector);
+		            	               previousHandParameterSum = currentHandParameterSum;
+                                               //previousFrame = currentFrame;
+		            	   
+		                        }
+                                   }
+		           }
+		           
+		          
 	        	   
 	           }
 	  }

@@ -8,11 +8,14 @@ import javax.swing.JScrollPane;
 
 import javax.swing.WindowConstants;
 
+/**
+ * @author WangTF
+ * This class shows a frame witch contains the German finger spelling alphabet
+ */
 
 public class AlphabetPanel extends javax.swing.JFrame {
-	/**
-	 * 
-	 */
+
+	
 	private static final long serialVersionUID = 1L;
 	private JScrollPane scrollPanel;
 	private JPanel picturePanel;
